@@ -142,7 +142,7 @@ app.get('/listMovies', async (req, res) => {
   try {
     await client.connect() // apro la connessione a mongodb
     const db = client.db(config.MONGODB_DB) // imposto il database su cui voglio lavorare
-    const query = {} // creo un oggetto vuoto che conterrà i filtri da applicare alla query
+    const query = {} // creo un oggetto vuoto che conterrà i filtri da applicare alla query 
     //db.getCollection("movies").find({runtime:{$gt:90} }) questo trova i film che sono sopra a 90 minuti, questa query funziona... 
 
     if (filters.title) query.title = { $regex: filters.title, $options: 'i' } // se il filtro title è presente lo aggiungo alla query come filtro di ricerca 
@@ -154,7 +154,7 @@ app.get('/listMovies', async (req, res) => {
       console.log(stringa)
     }
 
-    //const movies = await db.collection('movies').find(query).sort({ _id: -1 }).limit(50).toArray() // effettuo la query e recupero i primi 50 record che trovo, ordinati in maniera decrescente per campo _id
+    //const movies = await db.collection('movies').find(query).sort({ _id: -1 }).limit(50).toArray() // effettuo la query e recupero i primi 50 record che trovo, ordinati in maniera decrescente per campo _id commentato perché ho usato chatgpt per questo e non son sicura di aver capito come fa, ho provato a usare il for sopra....
     // res.status(200).json({ rc: 0, data: movies }) // rispondo alla richiesta ritornando un campo data nel body della risposta che contiene i record recuperati
   } catch (err) {
     console.error(err)
