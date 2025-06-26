@@ -15,7 +15,7 @@ app.use(cors())
 const config = {
   PORT: 3000,
   TOKEN_SIGN_KEY: '<chiave per firma token>',
-  MONGODB_URI: `<url cluster mongodb>`,
+  MONGODB_URI: `mongodb+srv://vaniillaval:3vZgkBJYuXo4WTn4@clusterval.qhgmc5m.mongodb.net/?retryWrites=true&w=majority&appName=ClusterVal`,
   MONGODB_DB: 'sample_mflix'
 }
 
@@ -29,28 +29,28 @@ const client = new MongoClient(config.MONGODB_URI, {
 })
 
 //middleware controllo validità token - eseguito per tutte le richieste ricevute indistintamente dal path
-app.use(function (req, res, next) {
+// app.use(function (req, res, next) {
  
-  if (req.originalUrl === '/login' || req.originalUrl === '/addUser') {  //escludo rotte che non devono essere sotto autenticazione
-    return next()
-  }
-  if (req.headers.authorization && req.headers.authorization.length > 0 && req.headers.authorization.split(' ')[0] === 'Bearer') {
-    const token = req.headers.authorization.split(' ')[1] // lettura token presente nel header "authorization" della richiesta http
-    try {
-      const decoded = jwt.verify(token, config.TOKEN_SIGN_KEY) //verifica e recupero contenuto token ricevuto
-      req.user = decoded //salvataggio contenuto del token in un campo del oggetto json della richiesta http ricevuta in modo da averlo disponibile all'interno del codice che risponde alla richiesta
+//   if (req.originalUrl === '/login' || req.originalUrl === '/addUser') {  //escludo rotte che non devono essere sotto autenticazione
+//     return next()
+//   }
+//   if (req.headers.authorization && req.headers.authorization.length > 0 && req.headers.authorization.split(' ')[0] === 'Bearer') {
+//     const token = req.headers.authorization.split(' ')[1] // lettura token presente nel header "authorization" della richiesta http
+//     try {
+//       const decoded = jwt.verify(token, config.TOKEN_SIGN_KEY) //verifica e recupero contenuto token ricevuto
+//       req.user = decoded //salvataggio contenuto del token in un campo del oggetto json della richiesta http ricevuta in modo da averlo disponibile all'interno del codice che risponde alla richiesta
       
-      next()//procedo con il richiamo del codice della richiesta effettiva 
-    } 
-    catch (err) {
-      console.error(err)
-      res.status(403).json({ rc: 1, msg: err.toString() }) //risposta in caso di errore nella validazione del token
-    }
-    } 
-    else {
-        res.status(400).json({ rc: 1, msg: 'Manca il token nella richiesta' }) //risposta in caso di assenza del token nella richiesta
-    }
-})
+//       next()//procedo con il richiamo del codice della richiesta effettiva 
+//     } 
+//     catch (err) {
+//       console.error(err)
+//       res.status(403).json({ rc: 1, msg: err.toString() }) //risposta in caso di errore nella validazione del token
+//     }
+//     } 
+//     else {
+//         res.status(400).json({ rc: 1, msg: 'Manca il token nella richiesta' }) //risposta in caso di assenza del token nella richiesta
+//     }
+// })
 
 // Effettua il login con le credenziali fornite nel body della richiesta 
 app.post('/login', async (req, res) => {
@@ -78,6 +78,11 @@ app.post('/login', async (req, res) => {
     finally { // sia con che senza errori chiudo la connessione a mongodb
     await client.close()
   }
+})
+
+app.get('/ciao', async(req, res)=>{
+  console.log("Ciao!!!!")
+  res.status(200).json({saluti: "Accipicchia!!!!"})
 })
 
 // Creazione di un nuovo utente con le credenziali fornite nel body della richiesta
@@ -143,11 +148,13 @@ app.get('/listMovies', async (req, res) => {
     const query = {} // creo un oggetto vuoto che conterrà i filtri da applicare alla query
 
 //DOMANDA: da dove prende l'indice i?? 
+db.getCollection("movies").find({runtime:{$gt:90} })
+
     if (filters.title) query.title = { $regex: filters.title, $options: 'i' } // se il filtro title è presente lo aggiungo alla query come filtro di ricerca 
     if (filters.director) query.director = { $regex: filters.director, $options: 'i' } // se il filtro director è presente lo aggiungo alla query come filtro di ricerca
     if (filters.year) query.year = filters.year // se il filtro year è presente lo aggiungo alla query come filtro di ricerca
 
-//DOMANDA: E cosa contiene poi _ID, da dove lo prende?
+
     const movies = await db.collection('movies').find(query).sort({ _id: -1 }).limit(50).toArray() // effettuo la query e recupero i primi 50 record che trovo, ordinati in maniera decrescente per campo _id
     res.status(200).json({ rc: 0, data: movies }) // rispondo alla richiesta ritornando un campo data nel body della risposta che contiene i record recuperati
   } catch (err) {
