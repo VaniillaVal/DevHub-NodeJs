@@ -95,7 +95,7 @@ app.put('/addUser', async (req, res) => {
     const email = await db.collection('mail').findOne({ mail: mail });
     if (user) return res.status(404).json({ rc: 1, msg: `Utente ${username} già presente, riprova` }); // controllo se esiste già un utente con lo stesso username e se esiste rispondo con un messaggio di errore adeguato
     if (email) return res.status(404).json({ rc: 1, msg: `La mail ${mail} è già assegnata ad un altro account, riprova` }); // effettuo lo stesso controllo anche per il campo email
-    next()// se supero i controlli precedenti allora posso inserire il nuovo utente nel database
+    //ext()/n/ se supero i controlli precedenti allora posso inserire il nuovo utente nel database
     await db.collection('users').insertOne({ username, password, mail })// inserisco il nuovo utente nella collection users
     res.status(201).send({ rc: 0, msg: `User ${username} aggiunto con successo` })
   } catch (err) {
@@ -114,9 +114,9 @@ app.post('/addFilm', async (req, res) => {
     const { title, director, year } = req.body // leggo i parametri (obbligatori) title, director e year ricevuti nel body della richiesta
 
     // se i parametri non sono tutti correttamente valorizzati rispondo con un messaggio di errore adeguato 
-    if (!title) return res.status(404).json({ rc: 1, msg: `Il campo ${title} non è presente` });// in caso non esiste rispondo alla richiesta indicando che l'utente non esiste
-    if (!director) return res.status(404).json({ rc: 1, msg: `Il campo ${director} non è presente` });// in caso non esiste rispondo alla richiesta indicando che l'utente non esiste
-    if (!year) return res.status(404).json({ rc: 1, msg: `Il campo ${year} non è presente` });// in caso non esiste rispondo alla richiesta indicando che l'utente non esiste
+    if (!title) return res.status(400).json({ rc: 1, msg: `Il campo ${title} non è presente` });// in caso non esiste rispondo alla richiesta indicando che l'utente non esiste
+    if (!director) return res.status(400).json({ rc: 1, msg: `Il campo ${director} non è presente` });// in caso non esiste rispondo alla richiesta indicando che l'utente non esiste
+    if (!year) return res.status(400).json({ rc: 1, msg: `Il campo ${year} non è presente` });// in caso non esiste rispondo alla richiesta indicando che l'utente non esiste
 
 
     const existingMovie = await db.collection('movies').findOne({ title: title, year: year });// controllo se esiste già un film con lo stesso titolo e lo stesso anno
@@ -136,13 +136,13 @@ app.post('/addFilm', async (req, res) => {
 // ritorna una lista filtrata di film  
 app.get('/listMovies', async (req, res) => {
 
-  app.use(express.json())
-  const filters = req.body // leggo i filtri ricevuti nel body della richiesta in formato json
-  if (!filters) return res.status(400).json({ rc: 1, msg: 'Nessun filtro specificato' }) // se non sono stati specificati filtri rispondo con un messaggio di errore adeguato
+  // middeware fatto all'inizio e non funzia app.use(express.json())
+  const filters = req.query // leggo i filtri ricevuti nel body della richiesta in formato json
+  //if (!filters) return res.status(400).json({ rc: 1, msg: 'Nessun filtro specificato' }) // se non sono stati specificati filtri rispondo con un messaggio di errore adeguato
   try {
     await client.connect() // apro la connessione a mongodb
     const db = client.db(config.MONGODB_DB) // imposto il database su cui voglio lavorare
-    const query = {} // creo un oggetto vuoto che conterrà i filtri da applicare alla query
+    const query = {} // creo un oggetto vuoto che conterrà i filtri da applicare alla query 
     //db.getCollection("movies").find({runtime:{$gt:90} }) questo trova i film che sono sopra a 90 minuti, questa query funziona... 
 
     if (filters.title) query.title = { $regex: filters.title, $options: 'i' } // se il filtro title è presente lo aggiungo alla query come filtro di ricerca 
@@ -154,7 +154,7 @@ app.get('/listMovies', async (req, res) => {
       console.log(stringa)
     }
 
-    //const movies = await db.collection('movies').find(query).sort({ _id: -1 }).limit(50).toArray() // effettuo la query e recupero i primi 50 record che trovo, ordinati in maniera decrescente per campo _id
+    //const movies = await db.collection('movies').find(query).sort({ _id: -1 }).limit(50).toArray() // effettuo la query e recupero i primi 50 record che trovo, ordinati in maniera decrescente per campo _id commentato perché ho usato chatgpt per questo e non son sicura di aver capito come fa, ho provato a usare il for sopra....
     // res.status(200).json({ rc: 0, data: movies }) // rispondo alla richiesta ritornando un campo data nel body della risposta che contiene i record recuperati
   } catch (err) {
     console.error(err)
