@@ -114,9 +114,9 @@ app.post('/addFilm', async (req, res) => {
     const { title, director, year } = req.body // leggo i parametri (obbligatori) title, director e year ricevuti nel body della richiesta
 
     // se i parametri non sono tutti correttamente valorizzati rispondo con un messaggio di errore adeguato 
-    if (!title) return res.status(400).json({ rc: 1, msg: `Il campo ${title} non è presente` });// in caso non esiste rispondo alla richiesta indicando che l'utente non esiste
-    if (!director) return res.status(400).json({ rc: 1, msg: `Il campo ${director} non è presente` });// in caso non esiste rispondo alla richiesta indicando che l'utente non esiste
-    if (!year) return res.status(400).json({ rc: 1, msg: `Il campo ${year} non è presente` });// in caso non esiste rispondo alla richiesta indicando che l'utente non esiste
+    if (!title) return res.status(404).json({ rc: 1, msg: `Il campo ${title} non è presente` });// in caso non esiste rispondo alla richiesta indicando che l'utente non esiste
+    if (!director) return res.status(404).json({ rc: 1, msg: `Il campo ${director} non è presente` });// in caso non esiste rispondo alla richiesta indicando che l'utente non esiste
+    if (!year) return res.status(404).json({ rc: 1, msg: `Il campo ${year} non è presente` });// in caso non esiste rispondo alla richiesta indicando che l'utente non esiste
 
 
     const existingMovie = await db.collection('movies').findOne({ title: title, year: year });// controllo se esiste già un film con lo stesso titolo e lo stesso anno
